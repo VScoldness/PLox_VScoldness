@@ -20,8 +20,6 @@ class Scanner:
         while not self.__atEnd():
             char = self.__advance()
             match char:
-                case ";":
-                    pass
                 case " ":
                     pass
                 case "\t":
@@ -30,6 +28,18 @@ class Scanner:
                     pass
                 case "\n":
                     pass
+                case "(":
+                    self.__add_token(self.__tokenize(TokenType.LEFT_PAREN, "("))
+                case ")":
+                    self.__add_token(self.__tokenize(TokenType.RIGHT_PAREN, ")"))
+                case "{":
+                    self.__add_token(self.__tokenize(TokenType.LEFT_BRACKET, "{"))
+                case "}":
+                    self.__add_token(self.__tokenize(TokenType.RIGHT_BRACKET, "}"))
+                case ",":
+                    self.__add_token(self.__tokenize(TokenType.COMMA, ","))
+                case ";":
+                    self.__add_token(self.__tokenize(TokenType.SEMICOLON, ";"))
                 case "+":
                     self.__add_token(self.__tokenize(TokenType.ADD, "+"))
                 case "-":
@@ -89,6 +99,7 @@ class Scanner:
     def __string(self) -> Token:
         while self.__peek() != "'":
             self.__advance()
+        self.__advance()
         string = self.source_code[self.start: self.current]
         return self.__tokenize(TokenType.STRING, string)
 
