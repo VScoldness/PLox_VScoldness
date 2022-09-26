@@ -29,5 +29,5 @@ class PLox:
     def __run(self, source_code: str) -> None:
         token_list = Scanner(source_code).scan()
         ast = self.parser.parse(token_list)
-        self.interpreter(ast)
+        self.interpreter.interpreter(ast)
 
