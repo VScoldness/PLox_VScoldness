@@ -51,21 +51,25 @@ class Scanner:
                 case "<":
                     if self.__peek() == "=":
                         self.__add_token(self.__tokenize(TokenType.LESS_EQUAL, "<="))
+                        self.__advance()
                     else:
                         self.__add_token(self.__tokenize(TokenType.LESS, "<"))
                 case ">":
                     if self.__peek() == "=":
                         self.__add_token(self.__tokenize(TokenType.GREATER_EQUAL, ">="))
+                        self.__advance()
                     else:
                         self.__add_token(self.__tokenize(TokenType.GREATER, ">"))
                 case "=":
                     if self.__peek() == "=":
                         self.__add_token(self.__tokenize(TokenType.EQUAL_EQUAL, "=="))
+                        self.__advance()
                     else:
                         self.__add_token(self.__tokenize(TokenType.EQUAL, "="))
                 case "!":
                     if self.__peek() == "=":
                         self.__add_token(self.__tokenize(TokenType.NOT_EQUAL, "!="))
+                        self.__advance()
                     else:
                         self.__add_token(self.__tokenize(TokenType.NOT, "!"))
                 case "'":

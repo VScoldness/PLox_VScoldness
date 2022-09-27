@@ -1,5 +1,5 @@
 import AST
-import Token
+from Token import TokenType
 
 
 class Interpreter(AST.VisitorExpr):
@@ -21,13 +21,17 @@ class Interpreter(AST.VisitorExpr):
             case "-": return left - right
             case "*": return left * right
             case '/': return left / right
+            case ">": return left > right
+            case ">=": return left >= right
+            case "<": return left < right
+            case "<=": return left <= right
             case _:
-                raise "only support '+ - * /' now"
+                raise f"not support binary operator {binary.operator}"
 
     def visit_unary(self, unary: AST.Unary) -> object:
-        if unary.operator.type == Token.TokenType.NOT:
+        if unary.operator == "!":
             return not self.__evaluate(unary.right)
-        elif unary.operator.type == Token.TokenType.MINUS:
+        elif unary.operator == "-":
             return -1 * self.__evaluate(unary.right)
         else:
             print("Here")
@@ -35,7 +39,13 @@ class Interpreter(AST.VisitorExpr):
 
     def visit_primary(self, primary: AST.Primary) -> object:
         match primary.literal.type:
-            case Token.TokenType.NUMBER:
-                return float(primary.literal.val)
+            case TokenType.STRING:
+                return primary.literal.val
+            case TokenType.NUMBER:
+                return primary.literal.val
+            case TokenType.FALSE:
+                return False
+            case TokenType.TRUE:
+                return True
 
 
