@@ -19,7 +19,7 @@ class Parser:
 
     def __expression(self) -> AST.Expr:
         expr = self.__logic_or()
-        assert (self.__advance().type == Token.TokenType.SEMICOLON, "Expect a ';' after expression")
+        # assert self.__advance().type == Token.TokenType.SEMICOLON, "Expect ';' after expression"
         return expr
 
     def __logic_or(self) -> AST.Expr:
@@ -39,6 +39,7 @@ class Parser:
         token = self.__peek()
         while token.type == Token.TokenType.ADD or token.type == Token.TokenType.MINUS:
             self.__advance()
+            self.__advance()
             right = self.__term()
             return AST.Binary(left, right, token.val)
         return left
@@ -48,15 +49,16 @@ class Parser:
         token = self.__peek()
         while token.type == Token.TokenType.STAR or token.type == Token.TokenType.DIVISION:
             self.__advance()
+            self.__advance()
             right = self.__factor()
             return AST.Binary(left, right, token.val)
         return left
 
     def __unary(self) -> AST.Expr:
         token = self.__previous()
-        while token.type == Token.TokenType.MINUS or token.type == Token.TokenType.NOT:
+        if token.type == Token.TokenType.MINUS or token.type == Token.TokenType.NOT:
             self.__advance()
-            return AST.Unary(token.val, self.__unary())
+            return AST.Unary(token, self.__unary())
         return self.__primary()
 
     def __call(self) -> AST.Expr:

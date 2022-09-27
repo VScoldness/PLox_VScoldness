@@ -7,8 +7,7 @@ class AST:
 
 
 class Stmt(AST):
-    def __init__(self) -> None:
-        pass
+    pass
 
 
 class Expr(AST):

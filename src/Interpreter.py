@@ -4,10 +4,11 @@ import Token
 
 class Interpreter(AST.VisitorExpr):
     def __init__(self):
-        self.ast_list = None
+        pass
 
     def interpreter(self, ast_list: list[AST]):
-        self.ast_list = ast_list
+        for ast in ast_list:
+            print(self.__evaluate(ast))
 
     def __evaluate(self, expr: AST.Expr):
         return expr.accept(self)
@@ -24,12 +25,13 @@ class Interpreter(AST.VisitorExpr):
                 raise "only support '+ - * /' now"
 
     def visit_unary(self, unary: AST.Unary) -> object:
-        if unary.operator == Token.TokenType.NOT:
+        if unary.operator.type == Token.TokenType.NOT:
             return not self.__evaluate(unary.right)
-        elif unary.operator == Token.TokenType.MINUS:
+        elif unary.operator.type == Token.TokenType.MINUS:
             return -1 * self.__evaluate(unary.right)
         else:
-            raise "only support '-' and '!' in the unary operation"
+            print("Here")
+            raise Exception("only support '-' and '!' in the unary operation")
 
     def visit_primary(self, primary: AST.Primary) -> object:
         match primary.literal.type:
