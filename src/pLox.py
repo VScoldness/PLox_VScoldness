@@ -9,7 +9,7 @@ class PLox:
         self.parser = Parser()
         self.interpreter = Interpreter()
 
-    def run(self, input: Optional[str]) -> None:
+    def run(self, input=None) -> None:
         if not input:
             self.repl()
         else:

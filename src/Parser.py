@@ -12,14 +12,26 @@ class Parser:
         self.tokens = tokens
         ast_list = []
         while not self.__at_end():
-            expr = self.__exprStmt()
+            expr = self.__stmt()
             ast_list.append(expr)
         return ast_list
+
+    def __stmt(self) -> AST.AST:
+        if self.__match(Token.TokenType.PRINT):
+            return self.__print_stmt()
+        else:
+            return self.__exprStmt()
 
     def __exprStmt(self) -> AST.Expr:
         expr = self.__expression()
         assert self.__advance().type == Token.TokenType.SEMICOLON, "Expect ';' after expression"
         return expr
+
+    def __print_stmt(self):
+        self.__advance()
+        expr = self.__expression()
+        assert self.__advance().type == Token.TokenType.SEMICOLON, "Expect ';' after print statement"
+        return AST.PrintStmt(expr)
 
     def __expression(self) -> AST.Expr:
         expr = self.__logic_or()

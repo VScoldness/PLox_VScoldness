@@ -8,10 +8,14 @@ class Interpreter(AST.VisitorExpr):
 
     def interpreter(self, ast_list: list[AST]):
         for ast in ast_list:
-            print(self.__evaluate(ast))
+            self.__evaluate(ast)
 
-    def __evaluate(self, expr: AST.Expr):
+    def __evaluate(self, expr: AST.AST):
         return expr.accept(self)
+
+    def visit_print(self, print_stmt: AST.PrintStmt) -> None:
+        val = self.__evaluate(print_stmt.val)
+        print(val)
 
     def visit_binary(self, binary: AST.Binary):
         left = self.__evaluate(binary.left)
