@@ -1,10 +1,11 @@
 import AST
 from Token import TokenType
+from Environment import Environment
 
 
 class Interpreter(AST.VisitorExpr):
     def __init__(self):
-        pass
+        self._global = Environment()
 
     def interpreter(self, ast_list: list[AST]):
         for ast in ast_list:
@@ -16,6 +17,10 @@ class Interpreter(AST.VisitorExpr):
     def visit_print(self, print_stmt: AST.PrintStmt) -> None:
         val = self.__evaluate(print_stmt.val)
         print(val)
+
+    def visit_var_stmt(self, var: AST.VarStmt) -> None:
+        val = self.__evaluate(var.val)
+        self._global.declare_variable(var.name, val)
 
     def visit_binary(self, binary: AST.Binary):
         left = self.__evaluate(binary.left)
@@ -51,5 +56,9 @@ class Interpreter(AST.VisitorExpr):
                 return False
             case TokenType.TRUE:
                 return True
+            case TokenType.IDENTIFIER:
+                return self._global.get_variable(primary.literal.val)
+            case _:
+                raise Exception(f"Do not support the primary datastructure {primary.literal.val}")
 
 

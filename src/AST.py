@@ -22,6 +22,15 @@ class PrintStmt(Stmt):
         return visitor.visit_print(self)
 
 
+class VarStmt(Stmt):
+    def __init__(self, name: str, val: Expr) -> None:
+        self.name = name
+        self.val = val
+
+    def accept(self, visitor) -> object:
+        return visitor.visit_var_stmt(self)
+
+
 class Binary(Expr):
     def __init__(self, left: Expr, right: Expr, operator: object) -> None:
         self.left = left
@@ -60,6 +69,9 @@ class VisitorExpr:
         pass
 
     def visit_print(self, print_val: PrintStmt):
+        pass
+
+    def visit_var_stmt(self, var: VarStmt):
         pass
 
 

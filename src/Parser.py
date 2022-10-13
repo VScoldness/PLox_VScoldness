@@ -19,6 +19,8 @@ class Parser:
     def __stmt(self) -> AST.AST:
         if self.__match(Token.TokenType.PRINT):
             return self.__print_stmt()
+        elif self.__match(Token.TokenType.VAR):
+            return self.__var_stmt()
         else:
             return self.__exprStmt()
 
@@ -27,11 +29,19 @@ class Parser:
         assert self.__advance().type == Token.TokenType.SEMICOLON, "Expect ';' after expression"
         return expr
 
-    def __print_stmt(self):
+    def __print_stmt(self) -> AST.PrintStmt:
         self.__advance()
         expr = self.__expression()
         assert self.__advance().type == Token.TokenType.SEMICOLON, "Expect ';' after print statement"
         return AST.PrintStmt(expr)
+
+    def __var_stmt(self):
+        self.__advance()
+        name = self.__advance().val
+        assert self.__advance().type == Token.TokenType.EQUAL, "Expect '=' after variable name in var statement"
+        val = self.__expression()
+        assert self.__advance().type == Token.TokenType.SEMICOLON, "Expect ';' after var statement"
+        return AST.VarStmt(name, val)
 
     def __expression(self) -> AST.Expr:
         expr = self.__logic_or()
@@ -91,7 +101,7 @@ class Parser:
         cur_token = self.__advance()
         match cur_token.type:
             case Token.TokenType.IDENTIFIER:
-                pass
+                return AST.Primary(cur_token)
             case Token.TokenType.LEFT_PAREN:
                 expr = self.__expression()
                 assert self.__advance().type == Token.TokenType.RIGHT_PAREN, "Expect ')' after expression"
