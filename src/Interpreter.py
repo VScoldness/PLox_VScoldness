@@ -18,9 +18,15 @@ class Interpreter(AST.VisitorExpr):
         val = self.__evaluate(print_stmt.val)
         print(val)
 
-    def visit_var_stmt(self, var: AST.VarStmt) -> None:
-        val = self.__evaluate(var.val)
+    def visit_var_decl(self, var: AST.VarDecl) -> None:
+        val = None
+        if var.val:
+            val = self.__evaluate(var.val)
         self._global.declare_variable(var.name, val)
+
+    def visit_assign(self, assign: AST.Assign) -> None:
+        val = self.__evaluate(assign.val)
+        self._global.assign_variable(assign.name, val)
 
     def visit_binary(self, binary: AST.Binary):
         left = self.__evaluate(binary.left)
