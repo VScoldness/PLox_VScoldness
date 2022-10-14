@@ -1,14 +1,22 @@
 class Environment:
-    def __init__(self) -> None:
+    def __init__(self, parent=None) -> None:
         self.variables = {}
+        self.parent = parent
 
     def declare_variable(self, name: str, val: object) -> None:
         self.variables[name] = val
 
     def assign_variable(self, name: str, val: object) -> None:
-        assert name in self.variables, f"Can not assign a non-exist variable: {name}. Declare it first!!!"
-        self.variables[name] = val
+        if name in self.variables:
+            self.variables[name] = val
+        if self.parent:
+            self.parent.assign_variable(name, val)
+        raise Exception("Can not assign a non-exist variable: {name}. Declare it first!!!")
 
     def get_variable(self, name) -> object:
-        assert name in self.variables, f"Variable {name} not in the environment"
-        return self.variables[name]
+        if name in self.variables:
+            return self.variables[name]
+        if self.parent:
+            return self.parent.get_variable(name)
+        raise Exception(f"Variable {name} not in the environment")
+

@@ -35,8 +35,21 @@ class Parser:
     def __stmt(self) -> AST.AST:
         if self.__match(Token.TokenType.PRINT):
             return self.__print_stmt()
+        elif self.__match(Token.TokenType.LEFT_BRACKET):
+            return self.__block()
         else:
             return self.__exprStmt()
+
+    def __block(self) -> AST.Block:
+        self.__advance()
+        stmts = []
+        while not self.__match(Token.TokenType.RIGHT_BRACKET):
+            stmt = self.__declaration()
+            stmts.append(stmt)
+            if self.__at_end():
+                raise Exception("Program ends inside a block!!!")
+        self.__advance()
+        return AST.Block(stmts)
 
     def __exprStmt(self) -> AST.Expr:
         expr = self.__expression()

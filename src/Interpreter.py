@@ -11,8 +11,15 @@ class Interpreter(AST.VisitorExpr):
         for ast in ast_list:
             self.__evaluate(ast)
 
-    def __evaluate(self, expr: AST.AST):
+    def __evaluate(self, expr: AST.AST) -> object:
         return expr.accept(self)
+
+    def visit_block(self, block: AST.Block) -> None:
+        global_env= self._global
+        self._global = Environment(global_env)
+        for stmt in block.stmts:
+            self.__evaluate(stmt)
+        self._global = global_env
 
     def visit_print(self, print_stmt: AST.PrintStmt) -> None:
         val = self.__evaluate(print_stmt.val)

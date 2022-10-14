@@ -14,6 +14,13 @@ class Expr(AST):
     pass
 
 
+class Block(Stmt):
+    def __init__(self, stmts: list[Stmt]) -> None:
+        self.stmts = stmts
+
+    def accept(self, visitor) -> object:
+        return visitor.visit_block(self)
+
 class PrintStmt(Stmt):
     def __init__(self, val: Expr) -> None:
         self.val = val
@@ -85,5 +92,9 @@ class VisitorExpr:
 
     def visit_assign(self, assign: Assign):
         pass
+
+    def visit_block(self, block: Block):
+        pass
+    
 
 
