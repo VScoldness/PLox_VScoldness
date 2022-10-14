@@ -1,4 +1,5 @@
 from Token import Token
+from typing import Optional
 
 
 class AST:
@@ -20,6 +21,17 @@ class Block(Stmt):
 
     def accept(self, visitor) -> object:
         return visitor.visit_block(self)
+
+
+class IfStmt(Stmt):
+    def __init__(self, condition: Expr, if_block: Block, else_block: Optional[Block]) -> None:
+        self.condition = condition
+        self.if_block = if_block
+        self.else_block = else_block
+
+    def accept(self, visitor) -> object:
+        return visitor.visit_if(self)
+
 
 class PrintStmt(Stmt):
     def __init__(self, val: Expr) -> None:
@@ -94,6 +106,9 @@ class VisitorExpr:
         pass
 
     def visit_block(self, block: Block):
+        pass
+
+    def visit_if(self, ifStmt: IfStmt):
         pass
     
 

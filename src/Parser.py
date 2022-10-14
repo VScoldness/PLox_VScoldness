@@ -37,6 +37,8 @@ class Parser:
             return self.__print_stmt()
         elif self.__match(Token.TokenType.LEFT_BRACKET):
             return self.__block()
+        elif self.__match(Token.TokenType.IF):
+            return self.__if_stmt()
         else:
             return self.__exprStmt()
 
@@ -56,6 +58,35 @@ class Parser:
         assert self.__advance().type == Token.TokenType.SEMICOLON, "Expect ';' after expression"
         return expr
 
+    def __if_stmt(self) -> AST.IfStmt:
+        condition = self.__if_condition()
+        if_block = self.__if_block()
+        else_block = self.__else_block()
+        return AST.IfStmt(condition, if_block, else_block)
+
+    def __if_condition(self) -> AST.Expr:
+        self.__advance()
+        assert self.__advance().type == Token.TokenType.LEFT_PAREN, "Expect '(' after if word"
+        assert self.__peek().type != Token.TokenType.RIGHT_PAREN, "The condition in if statement is empty!!!"
+        condition = self.__logic_or()
+        assert self.__advance().type == Token.TokenType.RIGHT_PAREN, "Expect ')' after if condition"
+        return condition
+
+    def __if_block(self) -> AST.Block:
+        if not self.__match(Token.TokenType.LEFT_BRACKET):
+            raise Exception("Expect '{' after if condition statement")
+        if_block = self.__block()
+        return if_block
+
+    def __else_block(self) -> AST.Block:
+        else_block = None
+        if self.__match(Token.TokenType.ELSE):
+            self.__advance()
+            if not self.__match(Token.TokenType.LEFT_BRACKET):
+                raise Exception("Expect '{' after else statement")
+            else_block = self.__block()
+        return else_block
+
     def __print_stmt(self) -> AST.PrintStmt:
         self.__advance()
         expr = self.__expression()
@@ -65,7 +96,7 @@ class Parser:
     def __expression(self) -> AST.Expr:
         return self.__assign()
 
-    def __assign(self) -> AST.Assign:
+    def __assign(self) -> AST.Expr:
         if self.__match(Token.TokenType.IDENTIFIER) and self.__next().type == Token.TokenType.EQUAL:
             name = self.__advance().val
             assert self.__advance().type == Token.TokenType.EQUAL, "Expect '=' after variable name in assign expression"
@@ -76,10 +107,20 @@ class Parser:
             return self.__logic_or()
 
     def __logic_or(self) -> AST.Expr:
-        return self.__logic_and()
+        left = self.__logic_and()
+        while self.__match(Token.TokenType.OR):
+            self.__advance()
+            right = self.__logic_and()
+            left = AST.Binary(left, right, 'or')
+        return left
 
     def __logic_and(self) -> AST.Expr:
-        return self.__equality()
+        left = self.__equality()
+        while self.__match(Token.TokenType.AND):
+            self.__advance()
+            right = self.__equality()
+            left = AST.Binary(left, right, 'and')
+        return left
 
     def __equality(self) -> AST.Expr:
         expr = self.__comparison()

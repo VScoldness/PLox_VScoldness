@@ -15,11 +15,18 @@ class Interpreter(AST.VisitorExpr):
         return expr.accept(self)
 
     def visit_block(self, block: AST.Block) -> None:
-        global_env= self._global
+        global_env = self._global
         self._global = Environment(global_env)
         for stmt in block.stmts:
             self.__evaluate(stmt)
         self._global = global_env
+
+    def visit_if(self, ifStmt: AST.IfStmt) -> None:
+        if self.__evaluate(ifStmt.condition):
+            self.__evaluate(ifStmt.if_block)
+        else:
+            if ifStmt.else_block:
+                self.__evaluate(ifStmt.else_block)
 
     def visit_print(self, print_stmt: AST.PrintStmt) -> None:
         val = self.__evaluate(print_stmt.val)
@@ -47,6 +54,8 @@ class Interpreter(AST.VisitorExpr):
             case ">=": return left >= right
             case "<": return left < right
             case "<=": return left <= right
+            case "or": return left or right
+            case "and": return left and right
             case _:
                 raise f"not support binary operator {binary.operator}"
 
