@@ -9,11 +9,13 @@ class Environment:
     def assign_variable(self, name: str, val: object) -> None:
         if name in self.variables:
             self.variables[name] = val
+            return
         if self.parent:
             self.parent.assign_variable(name, val)
-        raise Exception("Can not assign a non-exist variable: {name}. Declare it first!!!")
+            return
+        raise Exception(f"Can not assign a non-exist variable: {name}. Declare it first!!!")
 
-    def get_variable(self, name) -> object:
+    def get_variable(self, name: str) -> object:
         if name in self.variables:
             return self.variables[name]
         if self.parent:

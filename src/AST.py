@@ -23,6 +23,15 @@ class Block(Stmt):
         return visitor.visit_block(self)
 
 
+class WhileStmt(Stmt):
+    def __init__(self, condition: Expr, body: Block) -> None:
+        self.condition = condition
+        self.body = body
+
+    def accept(self, visitor) -> object:
+        return visitor.visit_while(self)
+
+
 class IfStmt(Stmt):
     def __init__(self, condition: Expr, if_block: Block, else_block: Optional[Block]) -> None:
         self.condition = condition
@@ -109,6 +118,9 @@ class VisitorExpr:
         pass
 
     def visit_if(self, ifStmt: IfStmt):
+        pass
+
+    def visit_while(self, while_stmt: WhileStmt):
         pass
     
 

@@ -39,6 +39,8 @@ class Parser:
             return self.__block()
         elif self.__match(Token.TokenType.IF):
             return self.__if_stmt()
+        elif self.__match(Token.TokenType.WHILE):
+            return self.__while_stmt()
         else:
             return self.__exprStmt()
 
@@ -57,6 +59,25 @@ class Parser:
         expr = self.__expression()
         assert self.__advance().type == Token.TokenType.SEMICOLON, "Expect ';' after expression"
         return expr
+
+    def __while_stmt(self) -> AST.WhileStmt:
+        condition = self.__while_condition()
+        body = self.__while_body()
+        return AST.WhileStmt(condition, body)
+
+    def __while_condition(self) -> AST.Expr:
+        self.__advance()
+        assert self.__advance().type == Token.TokenType.LEFT_PAREN, "Expect '(' after while word"
+        assert self.__peek().type != Token.TokenType.RIGHT_PAREN, "The condition in while statement is empty!!!"
+        condition = self.__logic_or()
+        assert self.__advance().type == Token.TokenType.RIGHT_PAREN, "Expect ')' after while condition"
+        return condition
+
+    def __while_body(self) -> AST.Block:
+        if not self.__match(Token.TokenType.LEFT_BRACKET):
+            raise Exception("Expect '{' after while condition statement")
+        while_block = self.__block()
+        return while_block
 
     def __if_stmt(self) -> AST.IfStmt:
         condition = self.__if_condition()

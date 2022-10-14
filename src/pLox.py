@@ -28,6 +28,12 @@ class PLox:
 
     def __run(self, source_code: str) -> None:
         token_list = Scanner(source_code).scan()
+        # self.print_token_list(token_list)
         ast = self.parser.parse(token_list)
         self.interpreter.interpreter(ast)
+
+    @staticmethod
+    def print_token_list(token_list):
+        for token in token_list:
+            print(str(token))
 
