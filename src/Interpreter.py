@@ -21,6 +21,12 @@ class Interpreter(AST.VisitorExpr):
             self.__evaluate(stmt)
         self._global = global_env
 
+    def visit_for(self, for_stmt: AST.ForStmt):
+        self.__evaluate(for_stmt.initialization)
+        while self.__evaluate(for_stmt.condition):
+            self.__evaluate(for_stmt.body)
+            self.__evaluate(for_stmt.increment)
+
     def visit_while(self, while_stmt: AST.WhileStmt) -> None:
         while self.__evaluate(while_stmt.condition):
             self.__evaluate(while_stmt.body)

@@ -12,8 +12,11 @@ class Parser:
         self.tokens = tokens
         ast_list = []
         while not self.__at_end():
-            expr = self.__declaration()
-            ast_list.append(expr)
+            try:
+                expr = self.__declaration()
+                ast_list.append(expr)
+            except Exception as err:
+                print(err)
         return ast_list
 
     def __declaration(self) -> AST.AST:
@@ -41,6 +44,8 @@ class Parser:
             return self.__if_stmt()
         elif self.__match(Token.TokenType.WHILE):
             return self.__while_stmt()
+        elif self.__match(Token.TokenType.FOR):
+            return self.__for_stmt()
         else:
             return self.__exprStmt()
 
@@ -59,6 +64,21 @@ class Parser:
         expr = self.__expression()
         assert self.__advance().type == Token.TokenType.SEMICOLON, "Expect ';' after expression"
         return expr
+
+    def __for_stmt(self) -> AST.Block:
+        self.__advance()
+        assert self.__advance().type == Token.TokenType.LEFT_PAREN, "Expect '(' after for word"
+        initialization = self.__var_decl()
+        # assert self.__advance().type == Token.TokenType.SEMICOLON, "Expect ';' after initialization in for statement"
+        condition = self.__expression()
+        assert self.__advance().type == Token.TokenType.SEMICOLON, "Expect ';' after condition in for statement"
+        increment = self.__expression()
+        assert self.__advance().type == Token.TokenType.RIGHT_PAREN, "Expect ')' after increment in for statement"
+        if not self.__match(Token.TokenType.LEFT_BRACKET):
+            raise Exception("Expect '{' after for condition statement")
+        body = self.__block()
+        # return AST.ForStmt(initialization, condition, increment, body)
+        return AST.Block([AST.ForStmt(initialization, condition, increment, body)])
 
     def __while_stmt(self) -> AST.WhileStmt:
         condition = self.__while_condition()
@@ -181,10 +201,23 @@ class Parser:
             operator = self.__advance()
             right = self.__unary()
             return AST.Unary(operator.val, right)
-        return self.__primary()
+        else:
+            return self.__call()
 
     def __call(self) -> AST.Expr:
-        pass
+        primary = self.__primary()
+        if self.__match(Token.TokenType.LEFT_PAREN):
+            arg_list = self.__call_function()
+            return AST.Call(primary, arg_list)
+        return primary
+
+    def __call_function(self) -> list[AST.Primary]:
+        arg_list = []
+        while self.__match(Token.TokenType.RIGHT_PAREN):
+            arg_list.append(self.__expression())
+            assert self.__advance().type == Token.TokenType.SEMICOLON
+        self.__advance()
+        return arg_list
 
     def __primary(self) -> AST.Expr:
         cur_token = self.__advance()

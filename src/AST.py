@@ -14,6 +14,14 @@ class Stmt(AST):
 class Expr(AST):
     pass
 
+class VarDecl(Stmt):
+    def __init__(self, name: str, val: Expr) -> None:
+        self.name = name
+        self.val = val
+
+    def accept(self, visitor) -> object:
+        return visitor.visit_var_decl(self)
+
 
 class Block(Stmt):
     def __init__(self, stmts: list[Stmt]) -> None:
@@ -21,6 +29,17 @@ class Block(Stmt):
 
     def accept(self, visitor) -> object:
         return visitor.visit_block(self)
+
+
+class ForStmt(Stmt):
+    def __init__(self, initialization: VarDecl, condition: Expr, increment: Expr, body: Block):
+        self.initialization = initialization
+        self.condition = condition
+        self.increment = increment
+        self.body = body
+
+    def accept(self, visitor) -> object:
+        return visitor.visit_for(self)
 
 
 class WhileStmt(Stmt):
@@ -50,15 +69,6 @@ class PrintStmt(Stmt):
         return visitor.visit_print(self)
 
 
-class VarDecl(Stmt):
-    def __init__(self, name: str, val: Expr) -> None:
-        self.name = name
-        self.val = val
-
-    def accept(self, visitor) -> object:
-        return visitor.visit_var_decl(self)
-
-
 class Assign(Expr):
     def __init__(self, name: str, val: Expr) -> None:
         self.name = name
@@ -85,6 +95,15 @@ class Unary(Expr):
 
     def accept(self, visitor) -> object:
         return visitor.visit_unary(self)
+
+
+class Call(Expr):
+    def __init__(self, name: str, arguments: list[Expr]) -> None:
+        self.name = name
+        self.arg = arguments
+
+    def accept(self, visitor) -> object:
+        return visitor.visit_call(self)
 
 
 class Primary(Expr):
@@ -122,6 +141,11 @@ class VisitorExpr:
 
     def visit_while(self, while_stmt: WhileStmt):
         pass
-    
+
+    def visit_for(self, for_stmt: ForStmt):
+        pass
+
+    def visit_call(self, call_expr: Call):
+        pass
 
 
