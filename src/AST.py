@@ -33,6 +33,14 @@ class FuncDecl(Stmt):
         return visitor.visit_func(self)
 
 
+class ReturnStmt(Stmt):
+    def __init__(self, expr: Expr) -> None:
+        self.expr = expr
+
+    def accept(self, visitor) -> object:
+        return visitor.visit_return(self)
+
+
 class VarDecl(Stmt):
     def __init__(self, name: str, val: Expr) -> None:
         self.name = name
@@ -166,6 +174,9 @@ class VisitorExpr:
         pass
 
     def visit_func(self, func_decl: FuncDecl):
+        pass
+
+    def visit_return(self, return_stmt: ReturnStmt):
         pass
 
 

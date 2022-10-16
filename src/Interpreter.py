@@ -47,7 +47,7 @@ class Interpreter(AST.VisitorExpr):
         print(val)
 
     def visit_func(self, func_decl: AST.FuncDecl) -> None:
-        func = LoxFunction(func_decl)
+        func = LoxFunction(func_decl, self.global_env)
         self.global_env.declare_variable(func_decl.name, func)
 
     def visit_var_decl(self, var: AST.VarDecl) -> None:
@@ -94,12 +94,15 @@ class Interpreter(AST.VisitorExpr):
         assert len(arg_list) == callee.arity(), f"function has {callee.arity()} arguments, but give {len(arg_list)}"
         return callee.call(self, arg_list)
 
+    def visit_return(self, return_stmt: AST.ReturnStmt) -> None:
+        val = self.__evaluate(return_stmt.expr)
+        raise Exception(val)
+
     def __evaluate_arguments(self, arg_list: list[AST.Expr]) -> list[object]:
         evaluated_arg_list = []
         for arg in arg_list:
             evaluated_arg = self.__evaluate(arg)
             evaluated_arg_list.append(evaluated_arg)
-
         return evaluated_arg_list
 
     def visit_primary(self, primary: AST.Primary) -> object:

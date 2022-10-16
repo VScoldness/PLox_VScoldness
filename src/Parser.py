@@ -76,6 +76,8 @@ class Parser:
             return self.__while_stmt()
         elif self.__match(Token.TokenType.FOR):
             return self.__for_stmt()
+        elif self.__match(Token.TokenType.RETURN):
+            return self.__return()
         else:
             return self.__exprStmt()
 
@@ -89,6 +91,12 @@ class Parser:
                 raise Exception("Program ends inside a block!!!")
         self.__advance()
         return AST.Block(stmts)
+
+    def __return(self) -> AST.ReturnStmt:
+        self.__advance()
+        expr = self.__expression()
+        assert self.__advance().type == Token.TokenType.SEMICOLON, "Expect ';' after return statement"
+        return AST.ReturnStmt(expr)
 
     def __exprStmt(self) -> AST.Expr:
         expr = self.__expression()

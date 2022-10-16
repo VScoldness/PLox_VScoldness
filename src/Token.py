@@ -38,6 +38,7 @@ class TokenType(Enum):
     NIL = 39
     VAR = 40
     PRINT = 41
+    RETURN = 42
 
     # literals
     STRING = 50
