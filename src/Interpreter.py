@@ -1,11 +1,12 @@
 import AST
 from Token import TokenType
 from Environment import Environment
+from LoxFunction import LoxFunction
 
 
 class Interpreter(AST.VisitorExpr):
     def __init__(self):
-        self._global = Environment()
+        self.global_env = Environment()
 
     def interpreter(self, ast_list: list[AST]):
         for ast in ast_list:
@@ -15,11 +16,14 @@ class Interpreter(AST.VisitorExpr):
         return expr.accept(self)
 
     def visit_block(self, block: AST.Block) -> None:
-        global_env = self._global
-        self._global = Environment(global_env)
+        self.execute_block(block, Environment(self.global_env))
+
+    def execute_block(self, block: AST.Block, env: Environment):
+        global_env = self.global_env
+        self.global_env = env
         for stmt in block.stmts:
             self.__evaluate(stmt)
-        self._global = global_env
+        self.global_env = global_env
 
     def visit_for(self, for_stmt: AST.ForStmt):
         self.__evaluate(for_stmt.initialization)
@@ -42,15 +46,19 @@ class Interpreter(AST.VisitorExpr):
         val = self.__evaluate(print_stmt.val)
         print(val)
 
+    def visit_func(self, func_decl: AST.FuncDecl) -> None:
+        func = LoxFunction(func_decl)
+        self.global_env.declare_variable(func_decl.name, func)
+
     def visit_var_decl(self, var: AST.VarDecl) -> None:
         val = None
         if var.val:
             val = self.__evaluate(var.val)
-        self._global.declare_variable(var.name, val)
+        self.global_env.declare_variable(var.name, val)
 
     def visit_assign(self, assign: AST.Assign) -> None:
         val = self.__evaluate(assign.val)
-        self._global.assign_variable(assign.name, val)
+        self.global_env.assign_variable(assign.name, val)
 
     def visit_binary(self, binary: AST.Binary):
         left = self.__evaluate(binary.left)
@@ -78,6 +86,14 @@ class Interpreter(AST.VisitorExpr):
             print("Here")
             raise Exception("only support '-' and '!' in the unary operation")
 
+    def visit_call(self, call_expr: AST.Call) -> object:
+        callee = self.__evaluate(call_expr.name)
+        arg_list = call_expr.arg_list.copy()
+        assert len(arg_list) <= 255, "The maximum arguments are 255"
+        assert isinstance(callee, LoxFunction), "Can only call functions"
+        assert len(arg_list) == callee.arity(), f"function has {callee.arity()} arguments, but give {len(arg_list)}"
+        return callee.call(self, arg_list)
+
     def visit_primary(self, primary: AST.Primary) -> object:
         match primary.literal.type:
             case TokenType.STRING:
@@ -89,7 +105,7 @@ class Interpreter(AST.VisitorExpr):
             case TokenType.TRUE:
                 return True
             case TokenType.IDENTIFIER:
-                return self._global.get_variable(primary.literal.val)
+                return self.global_env.get_variable(primary.literal.val)
             case _:
                 raise Exception(f"Do not support the primary datastructure {primary.literal.val}")
 

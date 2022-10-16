@@ -14,14 +14,6 @@ class Stmt(AST):
 class Expr(AST):
     pass
 
-class VarDecl(Stmt):
-    def __init__(self, name: str, val: Expr) -> None:
-        self.name = name
-        self.val = val
-
-    def accept(self, visitor) -> object:
-        return visitor.visit_var_decl(self)
-
 
 class Block(Stmt):
     def __init__(self, stmts: list[Stmt]) -> None:
@@ -29,6 +21,25 @@ class Block(Stmt):
 
     def accept(self, visitor) -> object:
         return visitor.visit_block(self)
+
+
+class FuncDecl(Stmt):
+    def __init__(self, name: str, arguments: list[str], body: Block) -> None:
+        self.name = name
+        self.arg_list = arguments
+        self.body = body
+
+    def accept(self, visitor) -> object:
+        return visitor.visit_func(self)
+
+
+class VarDecl(Stmt):
+    def __init__(self, name: str, val: Expr) -> None:
+        self.name = name
+        self.val = val
+
+    def accept(self, visitor) -> object:
+        return visitor.visit_var_decl(self)
 
 
 class ForStmt(Stmt):
@@ -98,9 +109,9 @@ class Unary(Expr):
 
 
 class Call(Expr):
-    def __init__(self, name: str, arguments: list[Expr]) -> None:
+    def __init__(self, name: Expr, arguments: list[Expr]) -> None:
         self.name = name
-        self.arg = arguments
+        self.arg_list = arguments
 
     def accept(self, visitor) -> object:
         return visitor.visit_call(self)
@@ -146,6 +157,9 @@ class VisitorExpr:
         pass
 
     def visit_call(self, call_expr: Call):
+        pass
+
+    def visit_func(self, func_decl: FuncDecl):
         pass
 
 

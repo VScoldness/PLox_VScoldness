@@ -22,8 +22,32 @@ class Parser:
     def __declaration(self) -> AST.AST:
         if self.__match(Token.TokenType.VAR):
             return self.__var_decl()
+        elif self.__match(Token.TokenType.FUN):
+            return self.__func_decl()
         else:
             return self.__stmt()
+
+    def __func_decl(self) -> AST.FuncDecl:
+        name = self.__advance().val
+        assert self.__advance().type == Token.TokenType.LEFT_PAREN, "Expect '(' after name in function " \
+                                                                    "declaration. "
+        arg_list = self.__func_arg_list()
+        assert self.__advance().type == Token.TokenType.LEFT_BRACKET, "Expect '{' after arguments in function " \
+                                                                      "declaration. "
+        body = self.__block()
+        return AST.FuncDecl(name, arg_list, body)
+
+    def __func_arg_list(self) -> list[str]:
+        arg_list = []
+        while self.__match(Token.TokenType.RIGHT_PAREN):
+            arg = self.__advance().val
+            assert isinstance(arg, str), "All arguments in function declaration should be string !!!"
+            assert self.__advance().type == Token.TokenType.SEMICOLON, "Expect ';' after argument in function " \
+                                                                       "declaration."
+            arg_list.append(arg)
+        self.__advance()
+        assert len(arg_list) <= 255, "The maximum arguments are 255"
+        return arg_list
 
     def __var_decl(self):
         self.__advance()
@@ -256,4 +280,3 @@ class Parser:
             if arg == self.__peek().type:
                 return True
         return False
-
