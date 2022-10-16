@@ -28,23 +28,29 @@ class Parser:
             return self.__stmt()
 
     def __func_decl(self) -> AST.FuncDecl:
+        self.__advance()
         name = self.__advance().val
         assert self.__advance().type == Token.TokenType.LEFT_PAREN, "Expect '(' after name in function " \
                                                                     "declaration. "
         arg_list = self.__func_arg_list()
-        assert self.__advance().type == Token.TokenType.LEFT_BRACKET, "Expect '{' after arguments in function " \
-                                                                      "declaration. "
+        if not self.__match(Token.TokenType.LEFT_BRACKET):
+            raise Exception("Expect '{' after arguments in function declaration. ")
         body = self.__block()
         return AST.FuncDecl(name, arg_list, body)
 
     def __func_arg_list(self) -> list[str]:
         arg_list = []
-        while self.__match(Token.TokenType.RIGHT_PAREN):
+        if self.__match(Token.TokenType.RIGHT_PAREN):
+            self.__advance()
+            return []
+        while True:
             arg = self.__advance().val
             assert isinstance(arg, str), "All arguments in function declaration should be string !!!"
-            assert self.__advance().type == Token.TokenType.SEMICOLON, "Expect ';' after argument in function " \
-                                                                       "declaration."
             arg_list.append(arg)
+            if self.__match(Token.TokenType.RIGHT_PAREN):
+                break
+            assert self.__advance().type == Token.TokenType.COMMA, "Expect ',' after argument in function " \
+                                                                   "declaration."
         self.__advance()
         assert len(arg_list) <= 255, "The maximum arguments are 255"
         return arg_list
@@ -93,7 +99,6 @@ class Parser:
         self.__advance()
         assert self.__advance().type == Token.TokenType.LEFT_PAREN, "Expect '(' after for word"
         initialization = self.__var_decl()
-        # assert self.__advance().type == Token.TokenType.SEMICOLON, "Expect ';' after initialization in for statement"
         condition = self.__expression()
         assert self.__advance().type == Token.TokenType.SEMICOLON, "Expect ';' after condition in for statement"
         increment = self.__expression()
@@ -235,11 +240,17 @@ class Parser:
             return AST.Call(primary, arg_list)
         return primary
 
-    def __call_function(self) -> list[AST.Primary]:
+    def __call_function(self) -> list[AST.Expr]:
+        self.__advance()
         arg_list = []
-        while self.__match(Token.TokenType.RIGHT_PAREN):
+        if self.__match(Token.TokenType.RIGHT_PAREN):
+            self.__advance()
+            return []
+        while True:
             arg_list.append(self.__expression())
-            assert self.__advance().type == Token.TokenType.SEMICOLON
+            if self.__match(Token.TokenType.RIGHT_PAREN):
+                break
+            assert self.__advance().type == Token.TokenType.COMMA, "Expect ',' after argument in call expression."
         self.__advance()
         return arg_list
 

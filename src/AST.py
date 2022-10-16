@@ -98,6 +98,9 @@ class Binary(Expr):
     def accept(self, visitor) -> object:
         return visitor.visit_binary(self)
 
+    def __str__(self) -> str:
+        return str(self.left) + str(self.operator) + str(self.right)
+
 
 class Unary(Expr):
     def __init__(self, operator: object, right: Expr):
@@ -123,6 +126,9 @@ class Primary(Expr):
 
     def accept(self, visitor) -> object:
         return visitor.visit_primary(self)
+
+    def __str__(self) -> str:
+        return str(self.literal.val)
 
 
 class VisitorExpr:

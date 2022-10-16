@@ -88,11 +88,19 @@ class Interpreter(AST.VisitorExpr):
 
     def visit_call(self, call_expr: AST.Call) -> object:
         callee = self.__evaluate(call_expr.name)
-        arg_list = call_expr.arg_list.copy()
-        assert len(arg_list) <= 255, "The maximum arguments are 255"
+        assert len(call_expr.arg_list) <= 255, "The maximum arguments are 255"
+        arg_list = self.__evaluate_arguments(call_expr.arg_list)
         assert isinstance(callee, LoxFunction), "Can only call functions"
         assert len(arg_list) == callee.arity(), f"function has {callee.arity()} arguments, but give {len(arg_list)}"
         return callee.call(self, arg_list)
+
+    def __evaluate_arguments(self, arg_list: list[AST.Expr]) -> list[object]:
+        evaluated_arg_list = []
+        for arg in arg_list:
+            evaluated_arg = self.__evaluate(arg)
+            evaluated_arg_list.append(evaluated_arg)
+
+        return evaluated_arg_list
 
     def visit_primary(self, primary: AST.Primary) -> object:
         match primary.literal.type:
