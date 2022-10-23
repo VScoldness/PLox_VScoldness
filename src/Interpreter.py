@@ -7,6 +7,7 @@ from LoxFunction import LoxFunction
 class Interpreter(AST.VisitorExpr):
     def __init__(self):
         self.global_env = Environment()
+        self.locals = {}
 
     def interpreter(self, ast_list: list[AST]):
         for ast in ast_list:
@@ -56,9 +57,14 @@ class Interpreter(AST.VisitorExpr):
             val = self.__evaluate(var.val)
         self.global_env.declare_variable(var.name, val)
 
-    def visit_assign(self, assign: AST.Assign) -> None:
+    def visit_assign(self, assign: AST.Assign) -> object:
         val = self.__evaluate(assign.val)
-        self.global_env.assign_variable(assign.name, val)
+        distance = self.locals.get(assign)
+        if distance:
+            self.global_env.assignAt(distance, assign.name, val)
+        else:
+            self.global_env.assign_variable(assign.name, val)
+        return val
 
     def visit_binary(self, binary: AST.Binary):
         left = self.__evaluate(binary.left)
@@ -119,5 +125,15 @@ class Interpreter(AST.VisitorExpr):
                 return self.global_env.get_variable(primary.literal.val)
             case _:
                 raise Exception(f"Do not support the primary datastructure {primary.literal.val}")
+
+    def visit_variable(self, var: AST.Variable):
+        return self.__look_up_variable(str(var.name.val), var)
+
+    def __look_up_variable(self, name: str, expr: AST.Expr) -> object:
+        distance = self.locals.get(expr)
+        if distance:
+            return self.global_env.getAt(distance, name)
+        else:
+            self.global_env.get_variable(name)
 
 

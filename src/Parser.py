@@ -266,7 +266,7 @@ class Parser:
         cur_token = self.__advance()
         match cur_token.type:
             case Token.TokenType.IDENTIFIER:
-                return AST.Primary(cur_token)
+                return AST.Variable(cur_token)
             case Token.TokenType.LEFT_PAREN:
                 expr = self.__expression()
                 assert self.__advance().type == Token.TokenType.RIGHT_PAREN, "Expect ')' after expression"

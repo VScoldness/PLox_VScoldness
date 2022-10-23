@@ -139,14 +139,22 @@ class Primary(Expr):
         return str(self.literal.val)
 
 
+class Variable(Expr):
+    def __init__(self, name: Token) -> None:
+        self.name = name
+
+    def accept(self, visitor) -> object:
+        return visitor.visit_variable(self)
+
+
 class VisitorExpr:
-    def visit_binary(self, binary: Expr):
+    def visit_binary(self, binary: Binary):
         pass
 
-    def visit_unary(self, unary: Expr):
+    def visit_unary(self, unary: Unary):
         pass
 
-    def visit_primary(self, primary: Expr):
+    def visit_primary(self, primary: Primary):
         pass
 
     def visit_print(self, print_val: PrintStmt):
@@ -177,6 +185,9 @@ class VisitorExpr:
         pass
 
     def visit_return(self, return_stmt: ReturnStmt):
+        pass
+
+    def visit_variable(self, var: Variable):
         pass
 
 

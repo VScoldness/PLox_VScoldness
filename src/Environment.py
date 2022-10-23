@@ -6,6 +6,9 @@ class Environment:
     def declare_variable(self, name: str, val: object) -> None:
         self.variables[name] = val
 
+    def assignAt(self, distance: int, name: str, val: object) -> None:
+        self.ancestor(distance).variables[name] = val
+
     def assign_variable(self, name: str, val: object) -> None:
         if name in self.variables:
             self.variables[name] = val
@@ -21,4 +24,13 @@ class Environment:
         if self.parent:
             return self.parent.get_variable(name)
         raise Exception(f"Variable {name} not in the environment")
+
+    def getAt(self, distance: int, name: str) -> object:
+        return self.ancestor(distance).variables[name]
+
+    def ancestor(self, distance: int):
+        new_env = self
+        while distance > 0:
+            new_env = new_env.parent
+        return new_env
 
