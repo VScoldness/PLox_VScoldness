@@ -22,14 +22,29 @@ class Parser:
     def __declaration(self) -> AST.AST:
         if self.__match(Token.TokenType.VAR):
             return self.__var_decl()
+        elif self.__match(Token.TokenType.CLASS):
+            return self.__class_decl()
         elif self.__match(Token.TokenType.FUN):
+            self.__advance()
             return self.__func_decl()
         else:
             return self.__stmt()
 
-    def __func_decl(self) -> AST.FuncDecl:
+    def __class_decl(self) -> AST.Class:
         self.__advance()
-        name = self.__advance().val
+        name = str(self.__advance().val)
+        assert self.__advance().type == Token.TokenType.LEFT_BRACKET, "Expect '{' after name in class " \
+                                                                      "declaration. "
+        methods = []
+        while self.__peek().type != Token.TokenType.RIGHT_BRACKET and not self.__at_end():
+            methods.append(self.__func_decl("method"))
+        assert self.__advance().type == Token.TokenType.RIGHT_BRACKET, "Expect '}' after name in class " \
+                                                                       "declaration. "
+        return AST.Class(name, methods)
+
+    def __func_decl(self, kind="") -> AST.FuncDecl:
+        # self.__advance()
+        name = str(self.__advance().val)
         assert self.__advance().type == Token.TokenType.LEFT_PAREN, "Expect '(' after name in function " \
                                                                     "declaration. "
         arg_list = self.__func_arg_list()
@@ -57,7 +72,7 @@ class Parser:
 
     def __var_decl(self):
         self.__advance()
-        name = self.__advance().val
+        name = str(self.__advance().val)
         val = None
         if self.__match(Token.TokenType.EQUAL):
             self.__advance()
@@ -175,14 +190,17 @@ class Parser:
         return self.__assign()
 
     def __assign(self) -> AST.Expr:
-        if self.__match(Token.TokenType.IDENTIFIER) and self.__next().type == Token.TokenType.EQUAL:
-            name = self.__advance().val
-            assert self.__advance().type == Token.TokenType.EQUAL, "Expect '=' after variable name in assign expression"
-            val = self.__logic_or()
-            # assert self.__advance().type == Token.TokenType.SEMICOLON, "Expect ';' after assign expression"
-            return AST.Assign(name, val)
-        else:
-            return self.__logic_or()
+        expr = self.__logic_or()
+        if self.__match(Token.TokenType.EQUAL):
+            name = str(self.__previous().val)
+            self.__advance()
+            val = self.__assign()
+            if isinstance(expr, AST.Variable):
+                return AST.Assign(name, val)
+            elif isinstance(expr, AST.Get):
+                return AST.Set(expr.obj, expr.name, val)
+            raise Exception("invalid assignment target!")
+        return expr
 
     def __logic_or(self) -> AST.Expr:
         left = self.__logic_and()
@@ -243,9 +261,16 @@ class Parser:
 
     def __call(self) -> AST.Expr:
         primary = self.__primary()
-        if self.__match(Token.TokenType.LEFT_PAREN):
-            arg_list = self.__call_function()
-            return AST.Call(primary, arg_list)
+        while True:
+            if self.__match(Token.TokenType.LEFT_PAREN):
+                arg_list = self.__call_function()
+                primary = AST.Call(primary, arg_list)
+            elif self.__match(Token.TokenType.DOT):
+                self.__advance()
+                name = str(self.__advance().val)
+                primary = AST.Get(primary, name)
+            else:
+                break
         return primary
 
     def __call_function(self) -> list[AST.Expr]:

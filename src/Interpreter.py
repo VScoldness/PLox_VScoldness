@@ -2,6 +2,7 @@ import AST
 from Token import TokenType
 from Environment import Environment
 from LoxFunction import LoxFunction
+from LoxClass import LoxClass, LoxInstance
 
 
 class Interpreter(AST.VisitorExpr):
@@ -15,6 +16,15 @@ class Interpreter(AST.VisitorExpr):
 
     def __evaluate(self, expr: AST.AST) -> object:
         return expr.accept(self)
+
+    def visit_class(self, class_dec: AST.Class) -> None:
+        self.global_env.declare_variable(class_dec.name, None)
+        methods = {}
+        for method in class_dec.methods:
+            class_method = LoxFunction(method, self.global_env)
+            methods[method.name] = class_method
+        new_class = LoxClass(class_dec.name, methods)
+        self.global_env.assign_variable(class_dec.name, new_class)
 
     def visit_block(self, block: AST.Block) -> None:
         self.execute_block(block, Environment(self.global_env))
@@ -96,13 +106,27 @@ class Interpreter(AST.VisitorExpr):
         callee = self.__evaluate(call_expr.name)
         assert len(call_expr.arg_list) <= 255, "The maximum arguments are 255"
         arg_list = self.__evaluate_arguments(call_expr.arg_list)
-        assert isinstance(callee, LoxFunction), "Can only call functions"
+        assert isinstance(callee, (LoxFunction, LoxClass)), "Can only call functions and class"
         assert len(arg_list) == callee.arity(), f"function has {callee.arity()} arguments, but give {len(arg_list)}"
         return callee.call(self, arg_list)
 
     def visit_return(self, return_stmt: AST.ReturnStmt) -> None:
         val = self.__evaluate(return_stmt.expr)
         raise Exception(val)
+
+    def visit_get(self, obj: AST.Get) -> object:
+        lox_obj = self.__evaluate(obj.obj)
+        if isinstance(lox_obj, LoxInstance):
+            return lox_obj.get(obj.name)
+        raise Exception("Only LoxInstance has properties")
+
+    def visit_set(self, expr: AST.Set) -> object:
+        obj = self.__evaluate(expr.expr)
+        if not isinstance(obj, LoxInstance):
+            raise Exception("Only instances have fields.")
+        val = self.__evaluate(expr.val)
+        obj.set(expr.name, val)
+        return val
 
     def __evaluate_arguments(self, arg_list: list[AST.Expr]) -> list[object]:
         evaluated_arg_list = []
@@ -131,9 +155,14 @@ class Interpreter(AST.VisitorExpr):
 
     def __look_up_variable(self, name: str, expr: AST.Expr) -> object:
         distance = self.locals.get(expr)
+        # print(expr)
+        # print(distance)
+        # print(self.locals)
         if distance:
             return self.global_env.getAt(distance, name)
         else:
-            self.global_env.get_variable(name)
+            return self.global_env.get_variable(name)
 
+    def resolve(self, expr: AST.Expr, distance: int):
+        self.locals[expr] = distance
 

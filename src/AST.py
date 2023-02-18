@@ -88,6 +88,15 @@ class PrintStmt(Stmt):
         return visitor.visit_print(self)
 
 
+class Class(Stmt):
+    def __init__(self, name: str, methods: list[FuncDecl]) -> None:
+        self.name = name
+        self.methods = methods
+
+    def accept(self, visitor) -> object:
+        return visitor.visit_class(self)
+
+
 class Assign(Expr):
     def __init__(self, name: str, val: Expr) -> None:
         self.name = name
@@ -126,6 +135,25 @@ class Call(Expr):
 
     def accept(self, visitor) -> object:
         return visitor.visit_call(self)
+
+
+class Get(Expr):
+    def __init__(self, obj: Expr, name: str):
+        self.obj = obj
+        self.name = name
+
+    def accept(self, visitor) -> object:
+        return visitor.visit_get(self)
+
+
+class Set(Expr):
+    def __init__(self, expr: Expr, name: str, val: Expr):
+        self.expr = expr
+        self.name = name
+        self.val = val
+
+    def accept(self, visitor) -> object:
+        return visitor.visit_set(self)
 
 
 class Primary(Expr):
@@ -190,4 +218,12 @@ class VisitorExpr:
     def visit_variable(self, var: Variable):
         pass
 
+    def visit_class(self, class_dec: Class):
+        pass
+
+    def visit_get(self, obj: Get):
+        pass
+
+    def visit_set(self, expr: Set):
+        pass
 
