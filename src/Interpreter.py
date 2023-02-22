@@ -21,7 +21,7 @@ class Interpreter(AST.VisitorExpr):
         self.global_env.declare_variable(class_dec.name, None)
         methods = {}
         for method in class_dec.methods:
-            class_method = LoxFunction(method, self.global_env)
+            class_method = LoxFunction(method, self.global_env, method.name=='init')
             methods[method.name] = class_method
         new_class = LoxClass(class_dec.name, methods)
         self.global_env.assign_variable(class_dec.name, new_class)
@@ -58,7 +58,7 @@ class Interpreter(AST.VisitorExpr):
         print(val)
 
     def visit_func(self, func_decl: AST.FuncDecl) -> None:
-        func = LoxFunction(func_decl, self.global_env)
+        func = LoxFunction(func_decl, self.global_env, False)
         self.global_env.declare_variable(func_decl.name, func)
 
     def visit_var_decl(self, var: AST.VarDecl) -> None:
@@ -128,6 +128,9 @@ class Interpreter(AST.VisitorExpr):
         obj.set(expr.name, val)
         return val
 
+    def visit_this(self, this: AST.This) -> object:
+        return self.__look_up_variable(this.keyword, this)
+
     def __evaluate_arguments(self, arg_list: list[AST.Expr]) -> list[object]:
         evaluated_arg_list = []
         for arg in arg_list:
@@ -146,7 +149,7 @@ class Interpreter(AST.VisitorExpr):
             case TokenType.TRUE:
                 return True
             case TokenType.IDENTIFIER:
-                return self.global_env.get_variable(primary.literal.val)
+                return self.global_env.get_variable(str(primary.literal.val))
             case _:
                 raise Exception(f"Do not support the primary datastructure {primary.literal.val}")
 

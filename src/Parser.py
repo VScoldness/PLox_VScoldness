@@ -296,6 +296,9 @@ class Parser:
                 expr = self.__expression()
                 assert self.__advance().type == Token.TokenType.RIGHT_PAREN, "Expect ')' after expression"
                 return expr
+            case Token.TokenType.THIS:
+                keyword = str(self.__previous().val)
+                return AST.This(keyword)
             case _:
                 return AST.Primary(cur_token)
 

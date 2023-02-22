@@ -14,7 +14,7 @@ class Scanner:
         keyword = {"fun": TokenType.FUN, "for": TokenType.FOR, "while": TokenType.WHILE, "if": TokenType.IF,
                    "else": TokenType.ELSE, "and": TokenType.AND, "or": TokenType.OR, "true": TokenType.TRUE,
                    'false': TokenType.FALSE, 'nil': TokenType.NIL, 'var': TokenType.VAR, "print": TokenType.PRINT,
-                   "return": TokenType.RETURN, 'class': TokenType.CLASS}
+                   "return": TokenType.RETURN, 'class': TokenType.CLASS, 'this': TokenType.THIS}
         return keyword
 
     def scan(self) -> list[Token]:

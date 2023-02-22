@@ -156,6 +156,14 @@ class Set(Expr):
         return visitor.visit_set(self)
 
 
+class This(Expr):
+    def __init__(self, keyword: str):
+        self.keyword = keyword
+
+    def accept(self, visitor) -> object:
+        return visitor.visit_this(self)
+
+
 class Primary(Expr):
     def __init__(self, literal: Token) -> None:
         self.literal = literal
@@ -225,5 +233,8 @@ class VisitorExpr:
         pass
 
     def visit_set(self, expr: Set):
+        pass
+
+    def visit_this(self, this: This):
         pass
 

@@ -6,6 +6,12 @@ class FunctionType(Enum):
     NONE = 1
     FUNCTION = 2
     METHOD = 3
+    INITIALIZER = 4
+
+
+class ClassType(Enum):
+    NONE = 1
+    CLASS = 2
 
 
 class Resolver(AST.VisitorExpr):
@@ -13,6 +19,7 @@ class Resolver(AST.VisitorExpr):
         self.interpreter = interpreter
         self.scopes = []
         self.cur_func_type = FunctionType.NONE
+        self.cur_class_type = ClassType.NONE
 
     def resolve(self, ast_list: list[AST.AST]):
         for ast in ast_list:
@@ -32,11 +39,23 @@ class Resolver(AST.VisitorExpr):
                 return
 
     def visit_class(self, class_dec: AST.Class) -> None:
+        enclosing_class = self.cur_class_type
+        self.cur_class_type = ClassType.CLASS
+
         self.__declare(class_dec.name)
         self.__define(class_dec.name)
 
+        self.__begin_scope()
+
+        self.scopes[-1]['this'] = True
         for method in class_dec.methods:
-            self.__resolve_func(method, FunctionType.METHOD)
+            cur_func_tye = FunctionType.METHOD
+            if method.name == 'init':
+                cur_func_tye = FunctionType.INITIALIZER
+            self.__resolve_func(method, cur_func_tye)
+
+        self.__end_scope()
+        self.cur_class_type = enclosing_class
 
     def visit_block(self, block: AST.Block) -> None:
         self.__begin_scope()
@@ -86,6 +105,8 @@ class Resolver(AST.VisitorExpr):
         if self.cur_func_type == FunctionType.NONE:
             raise Exception("Can not return from top-level code.")
         if return_stmt.expr:
+            if self.cur_func_type == FunctionType.INITIALIZER:
+                raise Exception("Can not return a value from an initializer!")
             self.__resolve(return_stmt.expr)
 
     def visit_while(self, while_stmt: AST.WhileStmt) -> None:
@@ -122,6 +143,10 @@ class Resolver(AST.VisitorExpr):
         self.__resolve(expr.val)
         self.__resolve(expr.expr)
 
+    def visit_this(self, this: AST.This) -> None:
+        if self.cur_class_type == ClassType.NONE:
+            raise Exception("Can not use 'this' outside of a class")
+        self.__resolve_local(this.keyword)
 
     def __begin_scope(self) -> None:
         self.scopes.append({})

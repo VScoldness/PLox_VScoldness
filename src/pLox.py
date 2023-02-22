@@ -33,7 +33,7 @@ class PLox:
         ast = self.parser.parse(token_list)
         resolver = Resolver(self.interpreter)
         resolver.resolve(ast)
-        print(ast)
+        # print(ast)
         # print(self.interpreter.locals)
         # print(self.interpreter.global_env.variables)
         self.interpreter.interpreter(ast)

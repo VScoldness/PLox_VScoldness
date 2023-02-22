@@ -40,6 +40,7 @@ class TokenType(Enum):
     PRINT = 41
     RETURN = 42
     CLASS = 43
+    THIS = 44
 
     # literals
     STRING = 50
