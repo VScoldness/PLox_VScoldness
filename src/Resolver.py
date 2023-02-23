@@ -12,6 +12,7 @@ class FunctionType(Enum):
 class ClassType(Enum):
     NONE = 1
     CLASS = 2
+    SUBCLASS = 3
 
 
 class Resolver(AST.VisitorExpr):
@@ -45,6 +46,14 @@ class Resolver(AST.VisitorExpr):
         self.__declare(class_dec.name)
         self.__define(class_dec.name)
 
+        if class_dec.superclass:
+            if class_dec.superclass.name.val == class_dec.name:
+                raise Exception("A class can not inherit from itself!")
+            self.cur_class_type = ClassType.SUBCLASS
+            self.__resolve(class_dec.superclass)
+            self.__begin_scope()
+            self.scopes[-1]['super'] = True
+
         self.__begin_scope()
 
         self.scopes[-1]['this'] = True
@@ -55,6 +64,9 @@ class Resolver(AST.VisitorExpr):
             self.__resolve_func(method, cur_func_tye)
 
         self.__end_scope()
+        if class_dec.superclass:
+            self.__end_scope()
+
         self.cur_class_type = enclosing_class
 
     def visit_block(self, block: AST.Block) -> None:
@@ -140,6 +152,10 @@ class Resolver(AST.VisitorExpr):
         self.__resolve(obj.obj)
 
     def visit_set(self, expr: AST.Set) -> None:
+        if self.cur_class_type == ClassType.NONE:
+            raise Exception("Can not use 'super' outside a class")
+        if self.cur_class_type == ClassType.SUBCLASS:
+            raise Exception("Can not use 'super' in a class with no superclass.")
         self.__resolve(expr.val)
         self.__resolve(expr.expr)
 
@@ -147,6 +163,9 @@ class Resolver(AST.VisitorExpr):
         if self.cur_class_type == ClassType.NONE:
             raise Exception("Can not use 'this' outside of a class")
         self.__resolve_local(this.keyword)
+
+    def visit_super(self, lox_super: AST.Super) -> None:
+        self.__resolve_local(lox_super.keyword)
 
     def __begin_scope(self) -> None:
         self.scopes.append({})

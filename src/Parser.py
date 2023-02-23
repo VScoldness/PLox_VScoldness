@@ -33,6 +33,12 @@ class Parser:
     def __class_decl(self) -> AST.Class:
         self.__advance()
         name = str(self.__advance().val)
+        superclass = None
+        if self.__match(Token.TokenType.LESS):
+            self.__advance()
+            assert self.__match(Token.TokenType.IDENTIFIER)
+            superclass = AST.Variable(self.__advance())
+
         assert self.__advance().type == Token.TokenType.LEFT_BRACKET, "Expect '{' after name in class " \
                                                                       "declaration. "
         methods = []
@@ -40,7 +46,7 @@ class Parser:
             methods.append(self.__func_decl("method"))
         assert self.__advance().type == Token.TokenType.RIGHT_BRACKET, "Expect '}' after name in class " \
                                                                        "declaration. "
-        return AST.Class(name, methods)
+        return AST.Class(name, superclass, methods)
 
     def __func_decl(self, kind="") -> AST.FuncDecl:
         # self.__advance()
@@ -299,6 +305,12 @@ class Parser:
             case Token.TokenType.THIS:
                 keyword = str(self.__previous().val)
                 return AST.This(keyword)
+            case Token.TokenType.SUPER:
+                keyword = str(self.__advance().val)
+                assert self.__advance().type == Token.TokenType.DOT, "Expect '.' after 'super'."
+                assert self.__match(Token.TokenType.IDENTIFIER), "Expect superclass method name."
+                method = str(self.__advance().val)
+                return AST.Super(keyword, method)
             case _:
                 return AST.Primary(cur_token)
 

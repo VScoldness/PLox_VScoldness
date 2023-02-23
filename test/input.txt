@@ -66,3 +66,24 @@ var counter = makeCounter();
 counter();
 counter();
 
+class Test {
+    init(name, val) {
+        this.name = name;
+        this.val = val;
+    }
+    time() {
+        return this.val;
+    }
+}
+
+var t = Test('Yi', 5);
+print t.time();
+
+class Test {
+    cook() {
+        print 'test!!! Just a test!';
+    }
+}
+
+class tt < Test {}
+tt().cook();

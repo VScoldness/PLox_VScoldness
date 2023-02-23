@@ -41,6 +41,7 @@ class TokenType(Enum):
     RETURN = 42
     CLASS = 43
     THIS = 44
+    SUPER = 45
 
     # literals
     STRING = 50

@@ -18,12 +18,23 @@ class Interpreter(AST.VisitorExpr):
         return expr.accept(self)
 
     def visit_class(self, class_dec: AST.Class) -> None:
+        superclass = None
+        if class_dec.superclass:
+            superclass = self.__evaluate(class_dec.superclass)
+            assert isinstance(superclass, LoxClass), "Superclass must be a class."
         self.global_env.declare_variable(class_dec.name, None)
+
+        if class_dec.superclass:
+            self.global_env = Environment(self.global_env)
+            self.global_env.declare_variable('super', superclass)
+
         methods = {}
         for method in class_dec.methods:
-            class_method = LoxFunction(method, self.global_env, method.name=='init')
+            class_method = LoxFunction(method, self.global_env, method.name == 'init')
             methods[method.name] = class_method
-        new_class = LoxClass(class_dec.name, methods)
+        new_class = LoxClass(class_dec.name, superclass, methods)
+        if superclass:
+            self.global_env = self.global_env.parent
         self.global_env.assign_variable(class_dec.name, new_class)
 
     def visit_block(self, block: AST.Block) -> None:
@@ -130,6 +141,18 @@ class Interpreter(AST.VisitorExpr):
 
     def visit_this(self, this: AST.This) -> object:
         return self.__look_up_variable(this.keyword, this)
+
+    def visit_super(self, lox_super: AST.Super) -> object:
+        distance = self.locals[lox_super.keyword]
+        superclass = self.global_env.getAt(distance, 'super')
+        assert isinstance(superclass, LoxClass)
+        obj = self.global_env.getAt(distance-1, 'this')
+        method = superclass.find_method(lox_super.method)
+
+        if not method:
+            raise Exception(f"Undefined property: {lox_super.method}.")
+
+        return method.bind(obj)
 
     def __evaluate_arguments(self, arg_list: list[AST.Expr]) -> list[object]:
         evaluated_arg_list = []

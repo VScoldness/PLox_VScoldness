@@ -1,12 +1,16 @@
-class Test {
-    init(name, val) {
-        this.name = name;
-        this.val = val;
-    }
-    time() {
-        return this.val;
+class A {
+    method() {
+        print 'A method';
     }
 }
 
-var t = Test('Yi', 5);
-print t.time();
+class B {
+    method() {
+        print 'B method';
+    }
+    test() {
+        super.method();
+    }
+}
+
+B().test();

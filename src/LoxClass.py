@@ -2,8 +2,9 @@ from LoxFunction import LoxFunction
 
 
 class LoxClass:
-    def __init__(self, name: str, methods: dict[str, LoxFunction]) -> None:
+    def __init__(self, name: str, superclass, methods: dict[str, LoxFunction]) -> None:
         self.name = name
+        self.superclass = superclass
         self.methods = methods
 
     def call(self, interpreter, arguments: list[object]) -> object:
@@ -16,7 +17,10 @@ class LoxClass:
         return instance
 
     def find_method(self, name: str) -> LoxFunction:
-        return self.methods.get(name, None)
+        if name in self.methods:
+            return self.methods[name]
+        if self.superclass:
+            return self.superclass.find_method(name)
 
     def arity(self) -> int:
         initializer = self.find_method("init")

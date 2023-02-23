@@ -89,9 +89,10 @@ class PrintStmt(Stmt):
 
 
 class Class(Stmt):
-    def __init__(self, name: str, methods: list[FuncDecl]) -> None:
+    def __init__(self, name: str, superclass, methods: list[FuncDecl]) -> None:
         self.name = name
         self.methods = methods
+        self.superclass = superclass
 
     def accept(self, visitor) -> object:
         return visitor.visit_class(self)
@@ -162,6 +163,15 @@ class This(Expr):
 
     def accept(self, visitor) -> object:
         return visitor.visit_this(self)
+
+
+class Super(Expr):
+    def __init__(self, keyword: str, method: str):
+        self.keyword = keyword
+        self.method = method
+
+    def accept(self, visitor) -> object:
+        return visitor.visit_super(self)
 
 
 class Primary(Expr):
@@ -236,5 +246,8 @@ class VisitorExpr:
         pass
 
     def visit_this(self, this: This):
+        pass
+
+    def visit_super(self, lox_super: Super):
         pass
 
