@@ -47,10 +47,10 @@ class Resolver(AST.VisitorExpr):
         self.__define(class_dec.name)
 
         if class_dec.superclass:
-            if class_dec.superclass.name.val == class_dec.name:
+            if class_dec.superclass.name == class_dec.name:
                 raise Exception("A class can not inherit from itself!")
             self.cur_class_type = ClassType.SUBCLASS
-            self.__resolve(class_dec.superclass)
+            # self.__resolve(class_dec.superclass)
             self.__begin_scope()
             self.scopes[-1]['super'] = True
 

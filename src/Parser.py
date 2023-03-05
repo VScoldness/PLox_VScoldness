@@ -269,7 +269,7 @@ class Parser:
         primary = self.__primary()
         while True:
             if self.__match(Token.TokenType.LEFT_PAREN):
-                arg_list = self.__call_function()
+                arg_list = self.__call_arg()
                 primary = AST.Call(primary, arg_list)
             elif self.__match(Token.TokenType.DOT):
                 self.__advance()
@@ -279,7 +279,7 @@ class Parser:
                 break
         return primary
 
-    def __call_function(self) -> list[AST.Expr]:
+    def __call_arg(self) -> list[AST.Expr]:
         self.__advance()
         arg_list = []
         if self.__match(Token.TokenType.RIGHT_PAREN):
@@ -306,7 +306,7 @@ class Parser:
                 keyword = str(self.__previous().val)
                 return AST.This(keyword)
             case Token.TokenType.SUPER:
-                keyword = str(self.__advance().val)
+                keyword = str(cur_token.val)
                 assert self.__advance().type == Token.TokenType.DOT, "Expect '.' after 'super'."
                 assert self.__match(Token.TokenType.IDENTIFIER), "Expect superclass method name."
                 method = str(self.__advance().val)

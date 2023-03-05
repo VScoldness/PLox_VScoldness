@@ -31,3 +31,6 @@ class LoxFunction:
 
     def arity(self) -> int:
         return len(self.func.arg_list)
+
+    def __str__(self) -> str:
+        return f"fn: {self.func.name}"

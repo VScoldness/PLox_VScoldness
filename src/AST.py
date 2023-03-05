@@ -1,9 +1,10 @@
+from __future__ import annotations
 from Token import Token
 from typing import Optional
 
 
 class AST:
-    def accept(self, visitor) -> object:
+    def accept(self, visitor: VisitorExpr) -> object:
         pass
 
 
@@ -89,7 +90,7 @@ class PrintStmt(Stmt):
 
 
 class Class(Stmt):
-    def __init__(self, name: str, superclass, methods: list[FuncDecl]) -> None:
+    def __init__(self, name: str, superclass: Class, methods: list[FuncDecl]) -> None:
         self.name = name
         self.methods = methods
         self.superclass = superclass

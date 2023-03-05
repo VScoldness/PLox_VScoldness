@@ -32,5 +32,6 @@ class Environment:
         new_env = self
         while distance > 0:
             new_env = new_env.parent
+            distance -= 1
         return new_env
 

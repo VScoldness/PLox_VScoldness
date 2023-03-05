@@ -42,10 +42,12 @@ class Interpreter(AST.VisitorExpr):
 
     def execute_block(self, block: AST.Block, env: Environment):
         global_env = self.global_env
-        self.global_env = env
-        for stmt in block.stmts:
-            self.__evaluate(stmt)
-        self.global_env = global_env
+        try:
+            self.global_env = env
+            for stmt in block.stmts:
+                self.__evaluate(stmt)
+        finally:
+            self.global_env = global_env
 
     def visit_for(self, for_stmt: AST.ForStmt):
         self.__evaluate(for_stmt.initialization)
@@ -144,14 +146,13 @@ class Interpreter(AST.VisitorExpr):
 
     def visit_super(self, lox_super: AST.Super) -> object:
         distance = self.locals[lox_super.keyword]
-        superclass = self.global_env.getAt(distance, 'super')
-        assert isinstance(superclass, LoxClass)
-        obj = self.global_env.getAt(distance-1, 'this')
+        superclass = self.global_env.getAt(distance-1, 'super')
+        assert isinstance(superclass, LoxClass), "Super can only be used in a class"
+        obj = self.global_env.getAt(distance-2, 'this')
         method = superclass.find_method(lox_super.method)
 
         if not method:
             raise Exception(f"Undefined property: {lox_super.method}.")
-
         return method.bind(obj)
 
     def __evaluate_arguments(self, arg_list: list[AST.Expr]) -> list[object]:
@@ -181,9 +182,6 @@ class Interpreter(AST.VisitorExpr):
 
     def __look_up_variable(self, name: str, expr: AST.Expr) -> object:
         distance = self.locals.get(expr)
-        # print(expr)
-        # print(distance)
-        # print(self.locals)
         if distance:
             return self.global_env.getAt(distance, name)
         else:
